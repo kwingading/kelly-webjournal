@@ -9,7 +9,7 @@ const sections = [
 
 const contentData = {
   about: [
-    { num: 1, text: 'At heart - A storyteller, dreamer, lover of beauty. Crafting things that delight.' },
+    { num: 1, text: 'At heart - A storyteller, dreamer, lover of beauty. Creating things that delight.' },
     { num: 2, text: 'haru wa akebono - Heian period court-ladies, Mishima and Kawabata. Natasha and Andrei at the ball. Austen.' },
     { num: 3, text: 'LinkedIn tldr - Product Manager at a FinTech startup in HK. Previously shipped hotel concierge voicebots at PolyAI.' },
     { num: 4, text: 'Flow - Reading, writing and building. (Ice) Dance and jamming to music. Volleyball. Kintsugi.' },
