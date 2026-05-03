@@ -16,6 +16,11 @@ html, body, #root {
   height: 100%;
   margin: 0;
   padding: 0;
+  cursor: url('/sakura-cursor-32.png') 16 16, auto;
+}
+
+a, button, [role="button"], input, textarea, select, label {
+  cursor: url('/sakura-cursor-32.png') 16 16, pointer;
 }
 
 body {
