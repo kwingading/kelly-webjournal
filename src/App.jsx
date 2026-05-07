@@ -6,26 +6,17 @@ const FlyerCtx = createContext(null)
 
 const sections = [
   { id: 'about', title: 'About', numeral: 'i' },
-  { id: 'analogue', title: 'Analogue', numeral: 'ii' },
-  { id: 'digital', title: 'Digital', numeral: 'iii' },
-  { id: 'writing', title: 'Writing', numeral: 'iv' },
+  { id: 'writing', title: 'Writing', numeral: 'ii' },
+  { id: 'studio', title: 'Studio', numeral: 'iii' },
 ]
 
 const contentData = {
   about: [
-    { num: 1, text: 'At heart - A storyteller, dreamer, lover of beauty. Creating things that delight.' },
-    { num: 2, text: 'haru wa akebono - Heian period court-ladies, Mishima and Kawabata. Natasha and Andrei at the ball. Austen.' },
+    { num: 1, text: 'At heart - A storyteller, dreamer, lover of beauty.' },
+    { num: 2, text: 'haru wa akebono - Heian period court-ladies. Mishima and Kawabata. Natasha and Andrei at the ball. Austen.' },
     { num: 3, text: 'LinkedIn tldr - Product Manager at a FinTech startup in HK. Previously shipped hotel concierge voicebots at PolyAI.' },
-    { num: 4, text: 'Flow - Reading, writing and building. (Ice) Dance and jamming to music. Volleyball. Kintsugi.' },
+    { num: 4, text: 'Flow - Reading, writing and creating things that delight. (Ice) Dance and jamming to music. Volleyball. Kintsugi.' },
     { num: 5, text: 'Past Lives - London, Cambridge and Lockdown edition Oxford. Drew syntax trees and read Grice. Learned some Japanese and French. Wrote an unhealthy amount of fiction.' },
-  ],
-  analogue: [
-    { num: 1, text: 'bun bun - bun bun' },
-    { num: 2, text: 'More placeholder content to demonstrate the layout and styling of multiple entries.' },
-  ],
-  digital: [
-    { num: 1, text: 'Placeholder content for Digital section. This section could showcase digital projects, code experiments, or online creations.' },
-    { num: 2, text: 'Additional placeholder content for the digital realm.' },
   ],
   writing: {
     categories: [
@@ -269,6 +260,122 @@ function FlyingButterfly({ id, x0, y0, targetX, targetY, onDone }) {
   )
 }
 
+// ─── CursorButterfly ──────────────────────────────────────────────────────────
+// Replaces the native cursor with a butterfly that flaps its wings while the
+// mouse moves and rests with wings open when still. The image is rendered
+// three times — left wing, body strip, right wing — clipped to different
+// vertical bands. Only the wings are scaled, so the body stays unsquished.
+// Only mounts on fine-pointer devices.
+
+const CURSOR_SRC = '/butterfly-cursor-64.png'
+const BODY_INSET = 42       // % — body strip occupies center (100 - 2*BODY_INSET)%
+const WING_INSET = 100 - BODY_INSET   // wings occupy outer BODY_INSET% on each side
+
+function CursorButterfly() {
+  const containerRef = useRef(null)
+  const leftWingRef  = useRef(null)
+  const rightWingRef = useRef(null)
+
+  useEffect(() => {
+    if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return
+
+    const container = containerRef.current
+    const lw = leftWingRef.current
+    const rw = rightWingRef.current
+    if (!container || !lw || !rw) return
+
+    const pos = { x: -100, y: -100 }
+    let lastMove = -Infinity
+    let activated = false
+
+    const activate = () => {
+      if (activated) return
+      activated = true
+      document.documentElement.classList.add('butterfly-cursor-active')
+      container.style.opacity = '1'
+    }
+
+    const onMove = (e) => {
+      pos.x = e.clientX
+      pos.y = e.clientY
+      lastMove = performance.now()
+      activate()
+    }
+    const onLeave = () => { container.style.opacity = '0' }
+    const onEnter = () => { if (activated) container.style.opacity = '1' }
+
+    window.addEventListener('mousemove', onMove)
+    document.addEventListener('mouseleave', onLeave)
+    document.addEventListener('mouseenter', onEnter)
+
+    let raf
+    const tick = (now) => {
+      // Flutter while moving; settle to wings-open when idle.
+      // 130ms grace so a tiny pause mid-motion doesn't snap the wings still.
+      const fluttering = now - lastMove < 130
+      const flapT    = (now / 110) % (Math.PI * 2)
+      const wingOpen = fluttering ? Math.abs(Math.cos(flapT)) : 1
+      const wingScX  = 0.12 + wingOpen * 0.88
+
+      // Both wings scale toward the body center (transform-origin 50% 50%),
+      // so they fold inward without dragging the body with them.
+      container.style.transform = `translate(${pos.x - 16}px, ${pos.y - 16}px)`
+      lw.style.transform = `scaleX(${wingScX})`
+      rw.style.transform = `scaleX(${wingScX})`
+      raf = requestAnimationFrame(tick)
+    }
+    raf = requestAnimationFrame(tick)
+
+    return () => {
+      window.removeEventListener('mousemove', onMove)
+      document.removeEventListener('mouseleave', onLeave)
+      document.removeEventListener('mouseenter', onEnter)
+      cancelAnimationFrame(raf)
+      document.documentElement.classList.remove('butterfly-cursor-active')
+    }
+  }, [])
+
+  const layerStyle = {
+    position: 'absolute', left: 0, top: 0,
+    width: 32, height: 32,
+    transformOrigin: '50% 50%',
+    willChange: 'transform',
+    userSelect: 'none',
+  }
+
+  return (
+    <div
+      ref={containerRef}
+      style={{
+        position: 'fixed', left: 0, top: 0,
+        width: 32, height: 32,
+        pointerEvents: 'none',
+        zIndex: 10000,
+        opacity: 0,
+        willChange: 'transform, opacity',
+      }}
+    >
+      <img
+        ref={leftWingRef}
+        src={CURSOR_SRC}
+        alt=""
+        style={{ ...layerStyle, clipPath: `inset(0 ${WING_INSET}% 0 0)` }}
+      />
+      <img
+        ref={rightWingRef}
+        src={CURSOR_SRC}
+        alt=""
+        style={{ ...layerStyle, clipPath: `inset(0 0 0 ${WING_INSET}%)` }}
+      />
+      <img
+        src={CURSOR_SRC}
+        alt=""
+        style={{ ...layerStyle, clipPath: `inset(0 ${BODY_INSET}% 0 ${BODY_INSET}%)` }}
+      />
+    </div>
+  )
+}
+
 // ─── Page components ──────────────────────────────────────────────────────────
 
 function ContentItem({ num, text }) {
@@ -276,6 +383,37 @@ function ContentItem({ num, text }) {
   const hasLabel = dashIndex !== -1
   const label = hasLabel ? text.slice(0, dashIndex) : null
   const content = hasLabel ? text.slice(dashIndex + 3) : text
+  const isFlow = label === 'Flow'
+
+  const contentRef = useRef(null)
+  const waveActiveRef = useRef(false)
+
+  // Stadium-wave through the content words on hover of "Flow". composite:'add'
+  // lets the bob stack with WarpableText's butterfly-warp transforms instead
+  // of replacing them mid-flight.
+  const triggerWave = useCallback(() => {
+    if (waveActiveRef.current) return
+    const container = contentRef.current
+    if (!container) return
+    const spans = container.querySelectorAll('span[data-word]')
+    if (!spans.length) return
+    waveActiveRef.current = true
+
+    let lastAnim
+    spans.forEach((el, i) => {
+      lastAnim = el.animate(
+        [
+          { transform: 'translateY(0)' },
+          { transform: 'translateY(-14px)' },
+          { transform: 'translateY(0)' },
+        ],
+        { duration: 480, delay: i * 45, easing: 'ease-out', composite: 'add' },
+      )
+    })
+    lastAnim?.finished
+      .then(() => { waveActiveRef.current = false })
+      .catch(() => { waveActiveRef.current = false })
+  }, [])
 
   return (
     <div className="flex gap-4 mb-6 leading-relaxed">
@@ -283,8 +421,17 @@ function ContentItem({ num, text }) {
         <WarpableText text={`[${num}]`} />
       </span>
       <span>
-        {hasLabel && <><em><WarpableText text={label} /></em>{' - '}</>}
-        <WarpableText text={content} />
+        {hasLabel && (
+          <>
+            <em onMouseEnter={isFlow ? triggerWave : undefined}>
+              <WarpableText text={label} />
+            </em>
+            {' - '}
+          </>
+        )}
+        <span ref={isFlow ? contentRef : undefined}>
+          <WarpableText text={content} />
+        </span>
       </span>
     </div>
   )
@@ -331,7 +478,7 @@ function WritingContent() {
               <li key={item.text} className="text-black">
                 <a
                   href={item.url}
-                  className="text-black underline hover:text-black/60 transition-colors"
+                  className="text-black no-underline hover:text-black/60 transition-colors"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
@@ -347,15 +494,21 @@ function WritingContent() {
 }
 
 function Content({ activeSection, textRef }) {
-  const isComingSoon = activeSection === 'analogue' || activeSection === 'digital'
+  const isComingSoon = activeSection === 'studio'
   const isWriting = activeSection === 'writing'
   const items = contentData[activeSection] || []
 
+  // Writing aligns its first heading with "Contents" on the left;
+  // other sections sit lower, level with the nav list items.
+  const topPad = isWriting
+    ? 'pt-[calc(23vh+1cm)] md:pt-[calc(23vh+1cm)]'
+    : 'pt-[calc(23vh+8rem)] md:pt-[calc(23vh+9rem)]'
+
   return (
-    <article className="pt-[calc(23vh+8rem)] pb-12 px-8 md:pt-[calc(23vh+9rem)] md:px-12 lg:px-16">
+    <article className={`${topPad} pb-12 px-8 md:px-12 lg:px-16`}>
       {isComingSoon && (
         <img
-          src="/coming-soon-flowers.png"
+          src="/flower-field-bottom.png"
           alt=""
           className="fixed bottom-0 right-0 w-full md:w-1/2 pointer-events-none select-none"
         />
@@ -384,6 +537,17 @@ function App() {
   const [butterflies, setButterflies] = useState([])
   const textRef = useRef(null)
   const flyerPositionsRef = useRef([]) // mutated directly — no re-renders
+
+  // Pre-decode both flower PNGs so they paint instantly: the Contents-page
+  // one on initial load, and the bottom field the first time the user clicks
+  // Analogue/Digital. <link rel="preload"> handles the fetch in parallel.
+  useEffect(() => {
+    for (const src of ['/coming-soon-flowers.png', '/flower-field-bottom.png']) {
+      const img = new Image()
+      img.src = src
+      img.decode?.().catch(() => {})
+    }
+  }, [])
 
   const removeButterfly = useCallback((id) => {
     setButterflies(prev => prev.filter(b => b.id !== id))
@@ -433,6 +597,11 @@ function App() {
         <div className="hidden md:flex min-h-screen">
           <div className="w-1/2 relative">
             <Navigation activeSection={activeSection} onSelectSection={setActiveSection} />
+            <img
+              src="/coming-soon-flowers.png"
+              alt=""
+              className="fixed bottom-0 left-0 w-1/2 pointer-events-none select-none"
+            />
             <div
               className="absolute top-0 right-0 w-2 h-full pointer-events-none"
               style={{ background: 'linear-gradient(to right, transparent, rgba(0,0,0,0.08))' }}
@@ -450,6 +619,8 @@ function App() {
         {butterflies.map(b => (
           <FlyingButterfly key={b.id} {...b} onDone={() => removeButterfly(b.id)} />
         ))}
+
+        <CursorButterfly />
       </div>
     </FlyerCtx.Provider>
   )

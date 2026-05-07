@@ -23,6 +23,21 @@ a, button, [role="button"], input, textarea, select, label {
   cursor: url('/butterfly-cursor-32.png') 16 16, pointer;
 }
 
+/* CursorButterfly hides the native cursor by adding this class to <html>
+   once it has captured a real mouse position to render at. */
+html.butterfly-cursor-active,
+html.butterfly-cursor-active body,
+html.butterfly-cursor-active #root,
+html.butterfly-cursor-active a,
+html.butterfly-cursor-active button,
+html.butterfly-cursor-active [role="button"],
+html.butterfly-cursor-active input,
+html.butterfly-cursor-active textarea,
+html.butterfly-cursor-active select,
+html.butterfly-cursor-active label {
+  cursor: none;
+}
+
 body {
   font-family: 'Cormorant Garamond', Georgia, serif;
   font-weight: 300;
