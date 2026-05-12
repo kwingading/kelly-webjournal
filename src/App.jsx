@@ -13,7 +13,7 @@ const sections = [
 const contentData = {
   about: [
     { num: 1, text: 'At heart - A storyteller, dreamer, lover of beauty.' },
-    { num: 2, text: 'haru wa akebono - Heian period court-ladies. Mishima and Kawabata. Natasha and Andrei at the ball. Austen.' },
+    { num: 2, text: 'Spiritually somewhere among - Heian period court-ladies. Mishima and Kawabata. Natasha and Andrei at the ball. Austen.' },
     { num: 3, text: 'LinkedIn tldr - Product Manager at a FinTech startup in HK. Previously shipped hotel concierge voicebots at PolyAI.' },
     { num: 4, text: 'Flow - Reading, writing and creating things that delight. (Ice) Dance and jamming to music. Volleyball. Kintsugi.' },
     { num: 5, text: 'Past Lives - London, Cambridge and Lockdown edition Oxford. Drew syntax trees and read Grice. Learned some Japanese and French. Wrote an unhealthy amount of fiction.' },
@@ -616,6 +616,9 @@ function App() {
               className="absolute top-0 left-0 w-2 h-full pointer-events-none"
               style={{ background: 'linear-gradient(to left, transparent, rgba(0,0,0,0.08))' }}
             />
+            <div className="absolute top-6 right-8 text-xs italic tracking-[0.25em] uppercase text-black/60 pointer-events-none select-none z-10">
+              Kelly Wing
+            </div>
             <Content activeSection={activeSection} textRef={textRef} />
           </div>
         </div>
