@@ -506,13 +506,6 @@ function Content({ activeSection, textRef }) {
 
   return (
     <article className={`${topPad} pb-12 px-8 md:px-12 lg:px-16`}>
-      {isComingSoon && (
-        <img
-          src="/flower-field-bottom.png"
-          alt=""
-          className="fixed bottom-0 right-0 w-full md:w-1/2 pointer-events-none select-none"
-        />
-      )}
       <div ref={textRef} className="text-[17.5px]">
         {isComingSoon ? (
           <p className="text-[23px] text-black/60 italic">
@@ -542,7 +535,7 @@ function App() {
   // one on initial load, and the bottom field the first time the user clicks
   // Analogue/Digital. <link rel="preload"> handles the fetch in parallel.
   useEffect(() => {
-    for (const src of ['/coming-soon-flowers.png', '/flower-field-bottom.png']) {
+    for (const src of ['/coming-soon-flowers.webp', '/flower-field-bottom.webp']) {
       const img = new Image()
       img.src = src
       img.decode?.().catch(() => {})
@@ -582,9 +575,20 @@ function App() {
     }])
   }, [])
 
+  const isComingSoon = activeSection === 'studio'
+
   return (
     <FlyerCtx.Provider value={flyerPositionsRef}>
       <div className="min-h-screen bg-cream text-black font-serif" onClick={handleClick}>
+
+        {/* Kept mounted across sections so it paints in lockstep with the
+            Studio text instead of lagging in after route swap. */}
+        <img
+          src="/flower-field-bottom.webp"
+          alt=""
+          aria-hidden="true"
+          className={`fixed bottom-0 right-0 w-full md:w-1/2 pointer-events-none select-none ${isComingSoon ? 'opacity-100' : 'opacity-0'}`}
+        />
 
         {/* Mobile layout */}
         <div className="md:hidden">
@@ -598,7 +602,7 @@ function App() {
           <div className="w-1/2 relative">
             <Navigation activeSection={activeSection} onSelectSection={setActiveSection} />
             <img
-              src="/coming-soon-flowers.png"
+              src="/coming-soon-flowers.webp"
               alt=""
               className="fixed bottom-0 left-0 w-1/2 pointer-events-none select-none"
             />
